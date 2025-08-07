@@ -96,6 +96,10 @@ Follow these instructions to get a copy of the project up and running on your lo
         ```
     -   The application should now be running and accessible at `http://localhost:5173`.
 
+4. **Logging Into Application**
+    -   username: root
+    -   password: salainen
+
 ---
 
 ## Running Tests
