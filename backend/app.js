@@ -26,8 +26,21 @@ mongoose.connect(config.MONGODB_URI)
     logger.info('error connecting to MongoDB: ', error.message)
   })
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://reactcourse-7gli.onrender.com/'
+]
+
 app.use(cors({
-  origin: 'http://localhost:5173'
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.'
+      return callback(new Error(msg), false)
+    }
+    return callback(null, true)
+  }
 })) // activates the cross-origin
 app.use(express.static('dist')) // serves the production build static files
 app.use(express.json()) // activates the json-parser
