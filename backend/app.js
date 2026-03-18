@@ -36,6 +36,10 @@ app.use(express.static('dist')) // serves the production build static files
 app.use(express.json()) // activates the json-parser
 app.use(middleware.requestLogger) // activates the custom requestLogger
 
+app.get('/health', (req, res) => {
+  res.send('ok')
+})
+
 app.use('/api/notes', notesRouter)
 app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)
