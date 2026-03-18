@@ -1,0 +1,76 @@
+name: Deployment Pipeline
+
+on: 
+  push: 
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+      
+      - name: backend lint
+        working-directory: ./backend
+        run: npm run lint
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: frontend lint
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: backend tests
+        working-directory: ./backend
+        run: npm run test
+
+      - name: frontend tests
+        working-directory: ./frontend
+        run: npm run test
+
+      - name: verify frontend build
+        working-directory: ./frontend
+        run: npm run build
+
+
+  main: 
+    name: Deploy to Render
+    needs: [build_and_test]
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Deployment
+        uses: sws2apps/render-deployment@main
+        with: 
+          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+
+  tag_release: 
+    needs: [main]
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip')}}
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
