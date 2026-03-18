@@ -35,6 +35,9 @@ jobs:
 
       - name: backend tests
         working-directory: ./backend
+        env:
+          TEST_MONGODB_URI: ${{ secrets.TEST_MONGODB_URI }}
+          SECRET: ${{ secrets.SECRET }}
         run: npm run test
 
       - name: frontend tests
